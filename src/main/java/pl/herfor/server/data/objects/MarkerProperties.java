@@ -12,6 +12,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class MarkerProperties {
     private Date creationDate = Date.from(Instant.now());
+    private Date modificationDate = Date.from(Instant.now());
     private AccidentType accidentType;
     private SeverityType severityType;
 

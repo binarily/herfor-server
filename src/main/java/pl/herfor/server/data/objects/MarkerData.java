@@ -11,9 +11,9 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity
 @Inheritance
-public class Marker {
+public class MarkerData {
     @ReadOnlyProperty
-    private String type = "Marker";
+    private String type = "MarkerData";
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
@@ -23,7 +23,7 @@ public class Marker {
     @Embedded
     private MarkerProperties properties;
 
-    public Marker(Double latitude, Double longitude, MarkerProperties properties) {
+    public MarkerData(Double latitude, Double longitude, MarkerProperties properties) {
         this.location = new Point(latitude, longitude);
         this.properties = properties;
     }

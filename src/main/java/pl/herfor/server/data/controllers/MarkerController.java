@@ -2,8 +2,7 @@ package pl.herfor.server.data.controllers;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import pl.herfor.server.data.exceptions.notfound.MarkerNotFoundException;
-import pl.herfor.server.data.objects.Marker;
+import pl.herfor.server.data.objects.MarkerData;
 import pl.herfor.server.data.objects.MarkersLookupRequest;
 import pl.herfor.server.data.repositories.MarkerRepository;
 
@@ -18,24 +17,32 @@ public class MarkerController {
     }
 
     @GetMapping(path = "/markers", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public List<Marker> all() {
+    public List<MarkerData> all() {
         return repository.findAll();
     }
 
     @GetMapping(path = "/markers/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public Marker one(@PathVariable String id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new MarkerNotFoundException(id));
+    public MarkerData one(@PathVariable String id) {
+        return repository.findById(id).orElse(null);
     }
 
     @PostMapping(path = "/markers", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public List<Marker> markersInArea(@RequestBody MarkersLookupRequest request) {
-        return repository.findBetween(request.northEast, request.southWest);
+    public List<MarkerData> markersInArea(@RequestBody MarkersLookupRequest request) {
+        if (request.date == null) {
+            return repository.findBetween(request.northEast, request.southWest);
+        } else {
+            return repository.findBetweenSince(request.northEast, request.southWest, request.date);
+        }
+    }
+
+    @PostMapping(path = "/mappers/batch", produces = {MediaType.APPLICATION_JSON_VALUE})
+    public List<MarkerData> batchQuery(@RequestBody List<String> markerIds) {
+        return repository.findMarkerDataByIdIn(markerIds);
     }
 
     @PostMapping(path = "/markers/create", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public Marker create(@RequestBody Marker marker) {
-        return repository.save(marker);
+    public MarkerData create(@RequestBody MarkerData markerData) {
+        return repository.save(markerData);
     }
 
 }
