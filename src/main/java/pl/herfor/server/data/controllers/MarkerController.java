@@ -35,7 +35,7 @@ public class MarkerController {
         }
     }
 
-    @PostMapping(path = "/mappers/batch", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(path = "/markers/batch", produces = {MediaType.APPLICATION_JSON_VALUE})
     public List<MarkerData> batchQuery(@RequestBody List<String> markerIds) {
         return repository.findMarkerDataByIdIn(markerIds);
     }
