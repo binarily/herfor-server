@@ -1,5 +1,9 @@
 package pl.herfor.server.data.controllers;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import com.google.gson.Gson;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import pl.herfor.server.data.objects.MarkerData;
@@ -11,6 +15,7 @@ import java.util.List;
 @RestController
 public class MarkerController {
     private final MarkerRepository repository;
+    private static final String NOTIFICATION_TOPIC = "marker";
 
     MarkerController(MarkerRepository repository) {
         this.repository = repository;
@@ -42,7 +47,26 @@ public class MarkerController {
 
     @PostMapping(path = "/markers/create", produces = {MediaType.APPLICATION_JSON_VALUE})
     public MarkerData create(@RequestBody MarkerData markerData) {
-        return repository.save(markerData);
+        MarkerData saved = repository.save(markerData);
+        sendNotification(markerData);
+        return saved;
+    }
+
+    private void sendNotification(@RequestBody MarkerData markerData) {
+        Gson gson = new Gson();
+        Message message = Message.builder()
+                .putData("id", markerData.getId())
+                .putData("latitude", String.valueOf(markerData.getLocation().latitude))
+                .putData("longitude", String.valueOf(markerData.getLocation().longitude))
+                .putData("marker", gson.toJson(markerData))
+                .setTopic(NOTIFICATION_TOPIC)
+                .build();
+        try {
+            String response = FirebaseMessaging.getInstance().send(message);
+            System.out.println("Successfully sent message: " + response);
+        } catch (FirebaseMessagingException e) {
+            e.printStackTrace();
+        }
     }
 
 }
