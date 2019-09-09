@@ -4,6 +4,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import pl.herfor.server.data.objects.MarkerData;
@@ -53,7 +54,9 @@ public class MarkerController {
     }
 
     private void sendNotification(@RequestBody MarkerData markerData) {
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder()
+                .setDateFormat("yyyy-MM-dd HH:mm:ss")
+                .create();
         Message message = Message.builder()
                 .putData("id", markerData.getId())
                 .putData("latitude", String.valueOf(markerData.getLocation().latitude))
