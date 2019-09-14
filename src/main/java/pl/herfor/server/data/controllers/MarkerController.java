@@ -48,7 +48,7 @@ public class MarkerController {
 
     @PostMapping(path = "/markers/create", produces = {MediaType.APPLICATION_JSON_VALUE})
     public MarkerData create(@RequestBody MarkerData markerData) {
-        if (repository.findBetween(markerData.getLocation(), markerData.getLocation()) != null) {
+        if (repository.findBetween(markerData.getLocation(), markerData.getLocation()).isEmpty()) {
             MarkerData saved = repository.save(markerData);
             sendNotification(markerData);
             return saved;

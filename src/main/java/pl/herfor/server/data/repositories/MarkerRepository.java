@@ -16,7 +16,7 @@ public interface MarkerRepository extends JpaRepository<MarkerData, String> {
 
     @Query("select m from MarkerData m where m.location.latitude between :#{#southWest.latitude} and :#{#northEast.latitude} " +
             "and m.location.longitude between :#{#southWest.longitude} and :#{#northEast.longitude} " +
-            "and m.properties.modificationDate > :#{#date}")
+            "and m.properties.modificationDate > :#{#date} and m.properties.severityType <> :#{#SeverityType.NONE}")
     List<MarkerData> findBetweenSince(@Param("northEast") Point northEast, @Param("southWest") Point southWest, @Param("date") Date date);
 
     List<MarkerData> findMarkerDataByIdIn(List<String> markerIds);
