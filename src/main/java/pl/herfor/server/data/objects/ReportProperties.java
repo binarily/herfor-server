@@ -15,7 +15,7 @@ import java.time.OffsetDateTime;
 @Data
 @Embeddable
 @NoArgsConstructor
-public class MarkerProperties {
+public class ReportProperties {
     @Expose
     private OffsetDateTime creationDate = OffsetDateTime.now();
     @Expose
@@ -29,7 +29,7 @@ public class MarkerProperties {
     @Expose
     private Severity severity;
 
-    public MarkerProperties(Accident accident, Severity severity) {
+    public ReportProperties(Accident accident, Severity severity) {
         this.accident = accident;
         this.severity = severity;
     }

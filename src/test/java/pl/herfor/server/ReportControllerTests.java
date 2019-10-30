@@ -7,8 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 import pl.herfor.server.data.controllers.MarkerController;
-import pl.herfor.server.data.objects.MarkerData;
-import pl.herfor.server.data.repositories.MarkerRepository;
+import pl.herfor.server.data.objects.Report;
+import pl.herfor.server.data.repositories.ReportRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,22 +18,22 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 @SpringBootTest
-public class MarkerDataControllerTests {
+public class ReportControllerTests {
 
     @Mock
-    MarkerRepository repository;
+    ReportRepository repository;
     @InjectMocks
     MarkerController controller;
 
     @Test
     public void shouldListAllElements() {
         //given
-        List<MarkerData> markersMockList = new ArrayList<>();
+        List<Report> markersMockList = new ArrayList<>();
         for (int i = 0; i < 5; i++)
-            markersMockList.add(new MarkerData());
+            markersMockList.add(new Report());
         when(repository.findAll()).thenReturn(markersMockList);
         //when
-        List<MarkerData> results = controller.all();
+        List<Report> results = controller.all();
         //then
         assertEquals(5, results.size());
     }

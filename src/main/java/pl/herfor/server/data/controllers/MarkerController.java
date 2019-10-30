@@ -6,10 +6,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.herfor.server.data.objects.MarkerData;
-import pl.herfor.server.data.objects.requests.MarkerAddRequest;
-import pl.herfor.server.data.objects.requests.MarkersLookupRequest;
-import pl.herfor.server.data.repositories.MarkerRepository;
+import pl.herfor.server.data.objects.Report;
+import pl.herfor.server.data.objects.requests.ReportAddRequest;
+import pl.herfor.server.data.objects.requests.ReportSearchRequest;
+import pl.herfor.server.data.repositories.ReportRepository;
 import pl.herfor.server.data.services.NotificationService;
 
 import java.util.List;
@@ -17,22 +17,22 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 public class MarkerController {
-    private final MarkerRepository repository;
+    private final ReportRepository repository;
     private final NotificationService notificationService;
 
     @GetMapping(path = "/markers", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public List<MarkerData> all() {
+    public List<Report> all() {
         return repository.findAll();
     }
 
     @GetMapping(path = "/markers/{id}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public MarkerData one(@PathVariable String id) {
+    public Report one(@PathVariable String id) {
         return repository.findById(id).orElse(null);
     }
 
     @CrossOrigin
     @PostMapping(path = "/markers", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public List<MarkerData> markersInArea(@RequestBody MarkersLookupRequest request) {
+    public List<Report> markersInArea(@RequestBody ReportSearchRequest request) {
         if (request.date == null) {
             return repository.findBetween(request.northEast, request.southWest);
         } else {
@@ -41,14 +41,14 @@ public class MarkerController {
     }
 
     @PostMapping(path = "/markers/batch", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public List<MarkerData> batchQuery(@RequestBody List<String> markerIds) {
+    public List<Report> batchQuery(@RequestBody List<String> markerIds) {
         return repository.findMarkerDataByIdIn(markerIds);
     }
 
     @PostMapping(path = "/markers/create", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<MarkerData> create(@RequestBody MarkerAddRequest request) {
+    public ResponseEntity<Report> create(@RequestBody ReportAddRequest request) {
         if (repository.findBetween(request.getLocation(), request.getLocation()).isEmpty()) {
-            MarkerData saved = repository.save(request.toMarker());
+            Report saved = repository.save(request.toMarker());
             try {
                 notificationService.notifyAboutNewMarker(saved);
             } catch (JsonProcessingException e) {

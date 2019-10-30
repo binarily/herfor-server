@@ -4,8 +4,6 @@ import com.google.gson.annotations.Expose;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 
@@ -13,8 +11,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity
 @Inheritance
-@OnDelete(action = OnDeleteAction.CASCADE)
-public class MarkerData {
+public class Report {
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
@@ -23,16 +20,20 @@ public class MarkerData {
     @Embedded
     @Expose
     private Point location;
+    @Expose
+    @ManyToOne
+    public User user;
+
     @Embedded
     @Expose
-    private MarkerProperties properties;
+    private ReportProperties properties;
 
-    public MarkerData(Double latitude, Double longitude, MarkerProperties properties) {
+    public Report(Double latitude, Double longitude, ReportProperties properties) {
         this.location = new Point(latitude, longitude);
         this.properties = properties;
     }
 
-    public MarkerData(Point location, MarkerProperties properties) {
+    public Report(Point location, ReportProperties properties) {
         this.location = location;
         this.properties = properties;
     }

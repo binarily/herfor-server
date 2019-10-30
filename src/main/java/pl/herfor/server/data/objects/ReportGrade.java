@@ -15,7 +15,7 @@ import java.time.OffsetDateTime;
 @Data
 @Entity
 @NoArgsConstructor
-public class MarkerGrade {
+public class ReportGrade {
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
@@ -23,7 +23,11 @@ public class MarkerGrade {
 
     @Expose
     @ManyToOne
-    public MarkerData marker;
+    public Report marker;
+
+    @Expose
+    @ManyToOne
+    public User user;
 
     @Expose
     public OffsetDateTime submissionDate = OffsetDateTime.now();
@@ -31,7 +35,7 @@ public class MarkerGrade {
     @Expose
     private Grade grade;
 
-    public MarkerGrade(MarkerData marker, Grade grade) {
+    public ReportGrade(Report marker, Grade grade) {
         this.marker = marker;
         this.grade = grade;
     }

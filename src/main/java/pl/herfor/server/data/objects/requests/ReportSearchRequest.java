@@ -10,7 +10,7 @@ import java.time.OffsetDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MarkersLookupRequest {
+public class ReportSearchRequest {
     public Point northEast, southWest;
     public OffsetDateTime date;
 }
