@@ -1,26 +1,24 @@
 package pl.herfor.server.data.controllers;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.FirebaseMessagingException;
-import com.google.firebase.messaging.Message;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.herfor.server.data.objects.MarkerData;
-import pl.herfor.server.data.objects.MarkersLookupRequest;
+import pl.herfor.server.data.objects.requests.MarkerAddRequest;
+import pl.herfor.server.data.objects.requests.MarkersLookupRequest;
 import pl.herfor.server.data.repositories.MarkerRepository;
+import pl.herfor.server.data.services.NotificationService;
 
 import java.util.List;
 
 @RestController
+@AllArgsConstructor
 public class MarkerController {
     private final MarkerRepository repository;
-    private static final String NOTIFICATION_TOPIC = "marker";
-
-    MarkerController(MarkerRepository repository) {
-        this.repository = repository;
-    }
+    private final NotificationService notificationService;
 
     @GetMapping(path = "/markers", produces = {MediaType.APPLICATION_JSON_VALUE})
     public List<MarkerData> all() {
@@ -32,6 +30,7 @@ public class MarkerController {
         return repository.findById(id).orElse(null);
     }
 
+    @CrossOrigin
     @PostMapping(path = "/markers", produces = {MediaType.APPLICATION_JSON_VALUE})
     public List<MarkerData> markersInArea(@RequestBody MarkersLookupRequest request) {
         if (request.date == null) {
@@ -47,32 +46,18 @@ public class MarkerController {
     }
 
     @PostMapping(path = "/markers/create", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public MarkerData create(@RequestBody MarkerData markerData) {
-        if (repository.findBetween(markerData.getLocation(), markerData.getLocation()).isEmpty()) {
-            MarkerData saved = repository.save(markerData);
-            sendNotification(markerData);
-            return saved;
+    public ResponseEntity<MarkerData> create(@RequestBody MarkerAddRequest request) {
+        if (repository.findBetween(request.getLocation(), request.getLocation()).isEmpty()) {
+            MarkerData saved = repository.save(request.toMarker());
+            try {
+                notificationService.notifyAboutNewMarker(saved);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            return new ResponseEntity<>(saved, HttpStatus.OK);
         } else {
-            return null;
-        }
-    }
-
-    private void sendNotification(@RequestBody MarkerData markerData) {
-        Gson gson = new GsonBuilder()
-                .setDateFormat("yyyy-MM-dd HH:mm:ss")
-                .create();
-        Message message = Message.builder()
-                .putData("id", markerData.getId())
-                .putData("latitude", String.valueOf(markerData.getLocation().latitude))
-                .putData("longitude", String.valueOf(markerData.getLocation().longitude))
-                .putData("marker", gson.toJson(markerData))
-                .setTopic(NOTIFICATION_TOPIC)
-                .build();
-        try {
-            String response = FirebaseMessaging.getInstance().send(message);
-            System.out.println("Successfully sent message: " + response);
-        } catch (FirebaseMessagingException e) {
-            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
     }
 

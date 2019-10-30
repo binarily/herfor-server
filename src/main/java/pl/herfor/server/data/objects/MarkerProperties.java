@@ -1,24 +1,36 @@
 package pl.herfor.server.data.objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.gson.annotations.Expose;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pl.herfor.server.data.objects.enums.Accident;
+import pl.herfor.server.data.objects.enums.Severity;
 
 import javax.persistence.Embeddable;
-import java.time.Instant;
-import java.util.Date;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import java.time.OffsetDateTime;
 
 @Data
 @Embeddable
 @NoArgsConstructor
 public class MarkerProperties {
-    private Date creationDate = Date.from(Instant.now());
-    private Date modificationDate = Date.from(Instant.now());
-    private AccidentType accidentType;
-    private SeverityType severityType;
+    @Expose
+    private OffsetDateTime creationDate = OffsetDateTime.now();
+    @Expose
+    private OffsetDateTime modificationDate = OffsetDateTime.now();
+    @JsonIgnore
+    private OffsetDateTime expiryDate = OffsetDateTime.now().plusSeconds(60 * 10);
+    @Enumerated(EnumType.STRING)
+    @Expose
+    private Accident accident;
+    @Enumerated(EnumType.STRING)
+    @Expose
+    private Severity severity;
 
-    public MarkerProperties(AccidentType accidentType, SeverityType severityType) {
-        this.accidentType = accidentType;
-        this.severityType = severityType;
+    public MarkerProperties(Accident accident, Severity severity) {
+        this.accident = accident;
+        this.severity = severity;
     }
-
 }

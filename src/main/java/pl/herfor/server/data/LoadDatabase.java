@@ -5,10 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import pl.herfor.server.data.objects.AccidentType;
 import pl.herfor.server.data.objects.MarkerData;
 import pl.herfor.server.data.objects.MarkerProperties;
-import pl.herfor.server.data.objects.SeverityType;
+import pl.herfor.server.data.objects.enums.Accident;
+import pl.herfor.server.data.objects.enums.Severity;
+import pl.herfor.server.data.repositories.GradeRepository;
 import pl.herfor.server.data.repositories.MarkerRepository;
 
 @Configuration
@@ -18,10 +19,11 @@ class LoadDatabase {
 
     @Bean
     @Autowired
-    public CommandLineRunner initDatabase(MarkerRepository repository) {
+    public CommandLineRunner initDatabase(MarkerRepository repository, GradeRepository grades) {
         // TODO: remove to retain persistency
+        grades.deleteAll();
         repository.deleteAll();
-        MarkerProperties properties = new MarkerProperties(AccidentType.METRO, SeverityType.YELLOW);
+        MarkerProperties properties = new MarkerProperties(Accident.METRO, Severity.YELLOW);
         return args -> {
             log.info("Preloading " + repository.save(new MarkerData(52.3501, 20.8600, properties)));
             log.info("Preloading " + repository.save(new MarkerData(52.3801, 20.8900, properties)));
