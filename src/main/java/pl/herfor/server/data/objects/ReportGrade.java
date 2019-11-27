@@ -1,6 +1,7 @@
 package pl.herfor.server.data.objects;
 
-import com.google.gson.annotations.Expose;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
@@ -21,22 +22,24 @@ public class ReportGrade {
     @GenericGenerator(name = "uuid", strategy = "uuid2")
     private String id;
 
-    @Expose
+    @JsonIgnore
     @ManyToOne
     public Report marker;
 
-    @Expose
     @ManyToOne
     public User user;
 
-    @Expose
     public OffsetDateTime submissionDate = OffsetDateTime.now();
 
-    @Expose
     private Grade grade;
 
     public ReportGrade(Report marker, Grade grade) {
         this.marker = marker;
         this.grade = grade;
+    }
+
+    @JsonProperty
+    public String getReportId() {
+        return marker.getId();
     }
 }

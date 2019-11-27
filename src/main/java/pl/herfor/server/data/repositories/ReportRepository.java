@@ -23,7 +23,7 @@ public interface ReportRepository extends JpaRepository<Report, String> {
             "and m.properties.modificationDate > :#{#date}))")
     List<Report> findBetweenSince(Point northEast, Point southWest, OffsetDateTime date);
 
-    List<Report> findMarkerDataByIdIn(List<String> markerIds);
+    List<Report> findReportByIdIn(List<String> markerIds);
 
     @Query("SELECT m FROM Report m WHERE m.properties.severity <> 'NONE'" +
             "AND m.properties.expiryDate < :#{#date}")

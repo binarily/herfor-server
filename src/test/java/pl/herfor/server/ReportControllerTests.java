@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.test.context.SpringBootTest;
-import pl.herfor.server.data.controllers.MarkerController;
+import pl.herfor.server.data.controllers.ReportController;
 import pl.herfor.server.data.objects.Report;
 import pl.herfor.server.data.repositories.ReportRepository;
 
@@ -23,7 +23,7 @@ public class ReportControllerTests {
     @Mock
     ReportRepository repository;
     @InjectMocks
-    MarkerController controller;
+    ReportController controller;
 
     @Test
     public void shouldListAllElements() {

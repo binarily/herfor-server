@@ -11,6 +11,7 @@ import pl.herfor.server.data.objects.enums.Grade;
 import pl.herfor.server.data.objects.requests.ReportGradeRequest;
 import pl.herfor.server.data.repositories.GradeRepository;
 import pl.herfor.server.data.repositories.ReportRepository;
+import pl.herfor.server.data.repositories.UserRepository;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -20,37 +21,42 @@ import java.util.List;
 public class GradeController {
     private final GradeRepository repository;
     private final ReportRepository reportRepository;
+    private final UserRepository userRepository;
 
     @GetMapping(path = "/grades", produces = {MediaType.APPLICATION_JSON_VALUE})
     public List<ReportGrade> getAll() {
         return repository.findAll();
     }
 
-    @GetMapping(path = "/grades/marker/{markerId}", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public List<ReportGrade> getForMarker(@PathVariable String markerId) {
-        return repository.getGradesFor(markerId);
+    @GetMapping(path = "/grades/report/{reportId}", produces = {MediaType.APPLICATION_JSON_VALUE})
+    public List<ReportGrade> getForMarker(@PathVariable String reportId) {
+        return repository.getGradesFor(reportId);
     }
 
     @PostMapping(path = "/grades/add", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ReportGrade> add(@RequestBody ReportGradeRequest gradeRequest) {
-        Report marker = reportRepository.findById(gradeRequest.reportId).orElse(null);
-        if (marker == null) {
+        Report report = reportRepository.findById(gradeRequest.reportId).orElse(null);
+        if (report == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        ReportGrade addedGrade = repository.save(gradeRequest.toMarkerGrade(marker));
-        modifyMarkerWithGrade(gradeRequest, marker);
-        reportRepository.save(marker);
-        return new ResponseEntity<>(addedGrade, HttpStatus.CREATED);
+
+        if (!userRepository.existsById(gradeRequest.getUserId())) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+        ReportGrade addedGrade = repository.save(gradeRequest.toReportGrade(report));
+        modifyReportWithGrade(gradeRequest, report);
+        reportRepository.save(report);
+        return new ResponseEntity<>(addedGrade, HttpStatus.OK);
     }
 
-    private void modifyMarkerWithGrade(ReportGradeRequest gradeRequest, Report marker) {
-        OffsetDateTime dateToModify = marker.getProperties().getExpiryDate();
+    private void modifyReportWithGrade(ReportGradeRequest gradeRequest, Report report) {
+        OffsetDateTime dateToModify = report.getProperties().getExpiryDate();
         if (gradeRequest.getGrade() == Grade.RELEVANT) {
             dateToModify = dateToModify.plusSeconds(30);
         } else if (gradeRequest.getGrade() == Grade.NOT_RELEVANT) {
             dateToModify = dateToModify.minusSeconds(30);
         }
-        marker.getProperties().setExpiryDate(dateToModify);
-        marker.getProperties().setModificationDate(OffsetDateTime.now());
+        report.getProperties().setExpiryDate(dateToModify);
+        report.getProperties().setModificationDate(OffsetDateTime.now());
     }
 }

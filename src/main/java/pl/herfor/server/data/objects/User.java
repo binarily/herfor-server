@@ -12,7 +12,7 @@ import javax.persistence.Inheritance;
 
 @Data
 @NoArgsConstructor
-@Entity
+@Entity(name = "reportUser")
 @Inheritance
 public class User {
     @Id

@@ -2,8 +2,10 @@ package pl.herfor.server.data.objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.annotations.Expose;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.Wither;
 import pl.herfor.server.data.objects.enums.Accident;
 import pl.herfor.server.data.objects.enums.Severity;
 
@@ -14,6 +16,8 @@ import java.time.OffsetDateTime;
 
 @Data
 @Embeddable
+@Wither
+@AllArgsConstructor
 @NoArgsConstructor
 public class ReportProperties {
     @Expose
