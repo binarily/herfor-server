@@ -35,13 +35,12 @@ public class GradeController {
 
     @PostMapping(path = "/grades/add", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<ReportGrade> add(@RequestBody ReportGradeRequest gradeRequest) {
+        if (!userRepository.existsById(gradeRequest.getUserId())) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
         Report report = reportRepository.findById(gradeRequest.reportId).orElse(null);
         if (report == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-        if (!userRepository.existsById(gradeRequest.getUserId())) {
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         ReportGrade addedGrade = repository.save(gradeRequest.toReportGrade(report));
         modifyReportWithGrade(gradeRequest, report);

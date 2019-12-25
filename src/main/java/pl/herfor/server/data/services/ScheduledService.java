@@ -2,7 +2,9 @@ package pl.herfor.server.data.services;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import pl.herfor.server.data.Constants;
 import pl.herfor.server.data.objects.Report;
 import pl.herfor.server.data.objects.enums.Severity;
 import pl.herfor.server.data.repositories.ReportRepository;
@@ -18,9 +20,12 @@ public class ScheduledService {
     private final ReportRepository reportRepository;
     private final NotificationService notificationService;
 
-    //TODO: change before release
-    //@Scheduled(fixedRate = 10 * 1000)
+    @Scheduled(fixedRate = 10 * 1000)
     public void invalidateExpiredMarkers() {
+        if (Constants.DEV_SWITCH) {
+            log.debug("Marker expiry procedure ignored (dev switch).");
+            return;
+        }
         log.debug("Marker expiry procedure triggered.");
         List<Report> markersToRemove = reportRepository.findExpiredMarkers(OffsetDateTime.now());
         markersToRemove.forEach(notificationService::notifyAboutRemovedReport);
@@ -30,11 +35,15 @@ public class ScheduledService {
                     .collect(Collectors.toList()), OffsetDateTime.now(), Severity.NONE
             );
         }
-        log.debug("Invalidated {} markers.", markersToRemove.size());
+        log.debug("Expired {} markers.", markersToRemove.size());
     }
 
-    //@Scheduled(fixedRate = 10 * 1000)
+    @Scheduled(fixedRate = 10 * 1000)
     public void switchGreenMarkerSeverities() {
+        if (Constants.DEV_SWITCH) {
+            log.debug("Marker greening procedure ignored (dev switch).");
+            return;
+        }
         log.debug("Marker greening procedure triggered.");
         List<Report> markersToGreen = reportRepository.findChangeableMarkers(Severity.GREEN,
                 OffsetDateTime.now(), OffsetDateTime.now().plusMinutes(20));
@@ -48,8 +57,12 @@ public class ScheduledService {
         log.debug("Changed {} markers.", markersToGreen.size());
     }
 
-    //@Scheduled(fixedRate = 10 * 1000)
+    @Scheduled(fixedRate = 10 * 1000)
     public void switchYellowMarkerSeverities() {
+        if (Constants.DEV_SWITCH) {
+            log.debug("Marker yellowing procedure ignored (dev switch).");
+            return;
+        }
         log.debug("Marker yellowing procedure triggered.");
         List<Report> markersToYellow = reportRepository.findChangeableMarkers(Severity.YELLOW,
                 OffsetDateTime.now().plusMinutes(20), OffsetDateTime.now().plusMinutes(35));
@@ -63,8 +76,12 @@ public class ScheduledService {
         log.debug("Changed {} markers.", markersToYellow.size());
     }
 
-    //@Scheduled(fixedRate = 10 * 1000)
+    @Scheduled(fixedRate = 10 * 1000)
     public void switchRedMarkerSeverities() {
+        if (Constants.DEV_SWITCH) {
+            log.debug("Marker redding procedure ignored (dev switch).");
+            return;
+        }
         log.debug("Marker redding procedure triggered.");
         List<Report> markersToRed = reportRepository.findChangeableMarkers(Severity.RED,
                 OffsetDateTime.now().plusMinutes(35), OffsetDateTime.now().plusHours(48));

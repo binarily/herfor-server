@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 
 @SpringBootApplication
@@ -16,15 +15,22 @@ import java.io.IOException;
 @EnableScheduling
 public class HerforApplication {
 
-    public static void main(String[] args) {
+    public static final String credentialsFileLocation = "CHANGE CREDENTIALS FILE LOCATION HERE";
+    public static final String databaseUrl = "https://obs-czerniakk.firebaseio.com";
 
+    public static void main(String[] args) {
         try {
-            FileInputStream serviceAccount =
-                    new FileInputStream("src/main/resources/static/obs-czerniakk-firebase-adminsdk-2gg4q-0a5d31668b.json");
+            //USE WHEN AUTHENTICATING WITH A GENERATED FILE
+            //FileInputStream serviceAccount =
+            //        new FileInputStream(credentialsFileLocation);
+            //GoogleCredentials credentials = GoogleCredentials.fromStream(serviceAccount);
+
+            //USE WHEN AUTHENTICATING WITH GOOGLE CLOUD API
+            GoogleCredentials credentials = GoogleCredentials.getApplicationDefault();
 
             FirebaseOptions options = new FirebaseOptions.Builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setDatabaseUrl("https://obs-czerniakk.firebaseio.com")
+                    .setCredentials(credentials)
+                    .setDatabaseUrl(databaseUrl)
                     .build();
             FirebaseApp.initializeApp(options);
         } catch (IOException e) {

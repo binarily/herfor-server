@@ -2,6 +2,7 @@ package pl.herfor.server.data.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,11 @@ import pl.herfor.server.data.services.NotificationService;
 
 import java.util.List;
 
+import static pl.herfor.server.data.Constants.DEV_SWITCH;
+
 @RestController
 @AllArgsConstructor
+@Slf4j
 public class ReportController {
     private final ReportRepository repository;
     private final UserRepository userRepository;
@@ -52,9 +56,13 @@ public class ReportController {
         if (!userRepository.existsById(request.getUserId())) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        /*if (!repository.findBetween(request.getLocation(), request.getLocation()).isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }*/
+        if (DEV_SWITCH) {
+            if (!repository.findBetween(request.getLocation(), request.getLocation()).isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+            }
+        } else {
+            log.debug("Report location check disabled (dev switch)");
+        }
         Report saved = repository.save(request.toMarker(userRepository.getOne(request.getUserId())));
         try {
             notificationService.notifyAboutNewReport(saved);

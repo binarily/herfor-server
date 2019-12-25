@@ -14,6 +14,8 @@ import pl.herfor.server.data.repositories.GradeRepository;
 import pl.herfor.server.data.repositories.ReportRepository;
 import pl.herfor.server.data.repositories.UserRepository;
 
+import static pl.herfor.server.data.Constants.DEV_SWITCH;
+
 @Configuration
 @Slf4j
 public
@@ -22,7 +24,9 @@ class LoadDatabase {
     @Bean
     @Autowired
     public CommandLineRunner initDatabase(ReportRepository repository, GradeRepository grades, UserRepository users) {
-        // TODO: remove to retain persistency
+        if (!DEV_SWITCH) {
+            return args -> log.info("Database init ignored (no dev switch).");
+        }
         grades.deleteAll();
         repository.deleteAll();
         ReportProperties properties = new ReportProperties(Accident.METRO, Severity.YELLOW);
