@@ -8,7 +8,9 @@ import pl.herfor.server.data.Constants;
 import pl.herfor.server.data.objects.Report;
 import pl.herfor.server.data.objects.enums.Severity;
 import pl.herfor.server.data.repositories.ReportRepository;
+import pl.herfor.server.data.repositories.UserRepository;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ScheduledService {
     private final ReportRepository reportRepository;
+    private final UserRepository userRepository;
     private final NotificationService notificationService;
 
     @Scheduled(fixedRate = 10 * 1000)
@@ -28,13 +31,19 @@ public class ScheduledService {
         }
         log.debug("Marker expiry procedure triggered.");
         List<Report> markersToRemove = reportRepository.findExpiredMarkers(OffsetDateTime.now());
-        markersToRemove.forEach(notificationService::notifyAboutRemovedReport);
         if (!markersToRemove.isEmpty()) {
             reportRepository.changeMarkerSeverity(markersToRemove.stream()
                     .map(Report::getId)
-                    .collect(Collectors.toList()), OffsetDateTime.now(), Severity.NONE
+                    .collect(Collectors.toList()), Severity.NONE
             );
         }
+        markersToRemove.forEach(notificationService::notifyAboutRemovedReport);
+        markersToRemove.forEach(report -> {
+            long totalDuration = Duration.between(report.getProperties().getCreationDate(),
+                    report.getProperties().getExpiryDate()).toNanos() / 1000;
+            userRepository.updateReliabilityMetric(report.getUser().getId(), totalDuration);
+            reportRepository.changeReportExpiryDate(report.getId(), -1);
+        });
         log.debug("Expired {} markers.", markersToRemove.size());
     }
 
@@ -51,8 +60,7 @@ public class ScheduledService {
         if (!markersToGreen.isEmpty()) {
             reportRepository.changeMarkerSeverity(markersToGreen.stream()
                     .map(Report::getId)
-                    .collect(Collectors.toList()), OffsetDateTime.now(), Severity.GREEN
-            );
+                    .collect(Collectors.toList()), Severity.GREEN);
         }
         log.debug("Changed {} markers.", markersToGreen.size());
     }
@@ -70,8 +78,7 @@ public class ScheduledService {
         if (!markersToYellow.isEmpty()) {
             reportRepository.changeMarkerSeverity(markersToYellow.stream()
                     .map(Report::getId)
-                    .collect(Collectors.toList()), OffsetDateTime.now(), Severity.YELLOW
-            );
+                    .collect(Collectors.toList()), Severity.YELLOW);
         }
         log.debug("Changed {} markers.", markersToYellow.size());
     }
@@ -89,8 +96,7 @@ public class ScheduledService {
         if (!markersToRed.isEmpty()) {
             reportRepository.changeMarkerSeverity(markersToRed.stream()
                     .map(Report::getId)
-                    .collect(Collectors.toList()), OffsetDateTime.now(), Severity.RED
-            );
+                    .collect(Collectors.toList()), Severity.RED);
         }
         log.debug("Changed {} markers.", markersToRed.size());
     }

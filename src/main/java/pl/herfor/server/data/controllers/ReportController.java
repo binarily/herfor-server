@@ -7,7 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.herfor.server.data.Constants;
 import pl.herfor.server.data.objects.Report;
+import pl.herfor.server.data.objects.User;
 import pl.herfor.server.data.objects.requests.ReportAddRequest;
 import pl.herfor.server.data.objects.requests.ReportSearchRequest;
 import pl.herfor.server.data.repositories.ReportRepository;
@@ -39,10 +41,10 @@ public class ReportController {
     @CrossOrigin
     @PostMapping(path = "/reports", produces = {MediaType.APPLICATION_JSON_VALUE})
     public List<Report> reportsInArea(@RequestBody ReportSearchRequest request) {
-        if (request.date == null) {
-            return repository.findBetween(request.northEast, request.southWest);
+        if (request.getDate() == null) {
+            return repository.findBetween(request.getNorthEast(), request.getSouthWest());
         } else {
-            return repository.findBetweenSince(request.northEast, request.southWest, request.date);
+            return repository.findBetweenSince(request.getNorthEast(), request.getSouthWest(), request.getDate());
         }
     }
 
@@ -63,7 +65,14 @@ public class ReportController {
         } else {
             log.debug("Report location check disabled (dev switch)");
         }
-        Report saved = repository.save(request.toMarker(userRepository.getOne(request.getUserId())));
+        User creatingUser = userRepository.getOne(request.getUserId());
+        Report toSave = request.toReport(userRepository.getOne(request.getUserId()));
+        toSave.getProperties()
+                .setModificationDate(toSave.getProperties()
+                        .getCreationDate()
+                        .plusSeconds((long) (Constants.REGULAR_EXPIRY_DURATION * creatingUser.calculateReliability()))
+                );
+        Report saved = repository.save(toSave);
         try {
             notificationService.notifyAboutNewReport(saved);
         } catch (JsonProcessingException e) {

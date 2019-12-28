@@ -24,8 +24,8 @@ public class NotificationService {
         Message message = Message.builder()
                 .putData("action", "report-new")
                 .putData("id", report.getId())
-                .putData("latitude", String.valueOf(report.getLocation().latitude))
-                .putData("longitude", String.valueOf(report.getLocation().longitude))
+                .putData("latitude", String.valueOf(report.getLocation().getLatitude()))
+                .putData("longitude", String.valueOf(report.getLocation().getLongitude()))
                 .putData("marker", mapper.writeValueAsString(report))
                 .setTopic(NEW_REPORT_NOTIFICATION_TOPIC)
                 .build();

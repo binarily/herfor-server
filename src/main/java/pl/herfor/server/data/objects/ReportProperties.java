@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Wither;
+import pl.herfor.server.data.Constants;
 import pl.herfor.server.data.objects.enums.Accident;
 import pl.herfor.server.data.objects.enums.Severity;
 
@@ -25,7 +26,7 @@ public class ReportProperties {
     @Expose
     private OffsetDateTime modificationDate = OffsetDateTime.now();
     @JsonIgnore
-    private OffsetDateTime expiryDate = OffsetDateTime.now().plusSeconds(60 * 10);
+    private OffsetDateTime expiryDate = OffsetDateTime.now().plusMinutes(Constants.REGULAR_EXPIRY_DURATION);
     @Enumerated(EnumType.STRING)
     @Expose
     private Accident accident;

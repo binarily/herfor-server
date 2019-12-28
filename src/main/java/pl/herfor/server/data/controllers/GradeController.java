@@ -1,12 +1,16 @@
 package pl.herfor.server.data.controllers;
 
 import lombok.AllArgsConstructor;
+import org.apache.lucene.util.SloppyMath;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.herfor.server.data.Constants;
 import pl.herfor.server.data.objects.Report;
 import pl.herfor.server.data.objects.ReportGrade;
+import pl.herfor.server.data.objects.User;
+import pl.herfor.server.data.objects.enums.Accident;
 import pl.herfor.server.data.objects.enums.Grade;
 import pl.herfor.server.data.objects.requests.ReportGradeRequest;
 import pl.herfor.server.data.repositories.GradeRepository;
@@ -38,12 +42,15 @@ public class GradeController {
         if (!userRepository.existsById(gradeRequest.getUserId())) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        Report report = reportRepository.findById(gradeRequest.reportId).orElse(null);
+        Report report = reportRepository.findById(gradeRequest.getReportId()).orElse(null);
         if (report == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         ReportGrade addedGrade = repository.save(gradeRequest.toReportGrade(report));
         modifyReportWithGrade(gradeRequest, report);
+
+        int timeDiff = calculateTimeDifference(gradeRequest, report);
+        reportRepository.changeReportExpiryDate(report.getId(), timeDiff);
         reportRepository.save(report);
         return new ResponseEntity<>(addedGrade, HttpStatus.OK);
     }
@@ -55,7 +62,39 @@ public class GradeController {
         } else if (gradeRequest.getGrade() == Grade.NOT_RELEVANT) {
             dateToModify = dateToModify.minusSeconds(30);
         }
+        //TODO: do with an atomic call to database
         report.getProperties().setExpiryDate(dateToModify);
         report.getProperties().setModificationDate(OffsetDateTime.now());
+    }
+
+    private int calculateTimeDifference(ReportGradeRequest gradeRequest, Report report) {
+        int gradeCoefficient = gradeRequest.getGrade() == Grade.RELEVANT ? 1 : -1;
+        double gradeReportDistance = SloppyMath.haversinMeters(gradeRequest.getLocation().getLatitude(),
+                gradeRequest.getLocation().getLongitude(),
+                report.getLocation().getLatitude(), report.getLocation().getLongitude());
+        double accidentRadius = distanceFromAccident(report.getProperties().getAccident());
+        double distanceCoefficient = (accidentRadius - gradeReportDistance) / accidentRadius;
+        double timeCoefficient = ((double) Constants.REGULAR_EXPIRY_DURATION -
+                (((double) System.currentTimeMillis() / 1000) - report.getProperties().getCreationDate().toEpochSecond()))
+                / Constants.REGULAR_EXPIRY_DURATION;
+        User submittingUser = userRepository.getOne(gradeRequest.getUserId());
+        double userCoefficient = submittingUser.calculateReliability();
+        return (int) (gradeCoefficient * (1 + Math.tanh(Math.tanh(distanceCoefficient) + Math.tanh(timeCoefficient)
+                + Math.tanh(userCoefficient))) * Constants.GRADE_IMPACT_DURATION);
+    }
+
+    private int distanceFromAccident(Accident accident) {
+        switch (accident) {
+            case BUS:
+            case METRO:
+            case RAIL:
+            case TRAM:
+                return 1600;
+            case BIKE:
+                return 800;
+            case PEDESTRIAN:
+                return 400;
+        }
+        return 200;
     }
 }

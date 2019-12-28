@@ -90,6 +90,11 @@
             <artifactId>postgres-socket-factory</artifactId>
             <version>1.0.15</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-spatial</artifactId>
+            <version>8.2.0</version>
+        </dependency>
     </dependencies>
 
     <build>

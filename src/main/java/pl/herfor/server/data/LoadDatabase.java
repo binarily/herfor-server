@@ -18,8 +18,7 @@ import static pl.herfor.server.data.Constants.DEV_SWITCH;
 
 @Configuration
 @Slf4j
-public
-class LoadDatabase {
+public class LoadDatabase {
 
     @Bean
     @Autowired

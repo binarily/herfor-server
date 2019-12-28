@@ -13,7 +13,7 @@ import javax.persistence.Embeddable;
 @NoArgsConstructor
 public class Point {
     @Expose
-    public double latitude;
+    private double latitude;
     @Expose
-    public double longitude;
+    private double longitude;
 }

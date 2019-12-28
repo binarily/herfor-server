@@ -12,15 +12,15 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 public interface ReportRepository extends JpaRepository<Report, String> {
-    @Query("SELECT m from Report m where m.location.latitude between :#{#southWest.latitude} and :#{#northEast.latitude} " +
-            "and m.location.longitude between :#{#southWest.longitude} and :#{#northEast.longitude} and m.properties.severity <> 'NONE'")
+    @Query("SELECT m FROM Report m WHERE m.location.latitude BETWEEN :#{#southWest.latitude} AND :#{#northEast.latitude} " +
+            "AND m.location.longitude between :#{#southWest.longitude} AND :#{#northEast.longitude} AND m.properties.severity <> 'NONE'")
     List<Report> findBetween(Point northEast, Point southWest);
 
-    @Query("select m from Report m where m.location.latitude between :#{#southWest.latitude} and :#{#northEast.latitude} " +
-            "and m.location.longitude between :#{#southWest.longitude} and :#{#northEast.longitude} " +
-            "and ((m.properties.creationDate > :#{#date} and m.properties.severity <> 'NONE') " +
-            "or (m.properties.creationDate < :#{#date} " +
-            "and m.properties.modificationDate > :#{#date}))")
+    @Query("SELECT m FROM Report m WHERE m.location.latitude BETWEEN :#{#southWest.latitude} AND :#{#northEast.latitude} " +
+            "AND m.location.longitude BETWEEN :#{#southWest.longitude} AND :#{#northEast.longitude} " +
+            "AND ((m.properties.creationDate > :#{#date} AND m.properties.severity <> 'NONE') " +
+            "OR (m.properties.creationDate < :#{#date} " +
+            "AND m.properties.modificationDate > :#{#date}))")
     List<Report> findBetweenSince(Point northEast, Point southWest, OffsetDateTime date);
 
     List<Report> findReportByIdIn(List<String> markerIds);
@@ -37,6 +37,14 @@ public interface ReportRepository extends JpaRepository<Report, String> {
     @Transactional
     @Modifying
     @Query("UPDATE Report m SET m.properties.severity =:#{#severity}, " +
-            "m.properties.modificationDate = :#{#date} WHERE m.id in (:#{#idList})")
-    void changeMarkerSeverity(List<String> idList, OffsetDateTime date, Severity severity);
+            "m.properties.modificationDate = current_timestamp WHERE m.id in (:#{#idList})")
+    void changeMarkerSeverity(List<String> idList, Severity severity);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE report SET " +
+            "modification_date = current_timestamp, " +
+            "expiry_date = expiry_date + cast((:#{#seconds} || ' seconds') as interval) " +
+            "WHERE id = :#{#id}", nativeQuery = true)
+    void changeReportExpiryDate(String id, int seconds);
 }

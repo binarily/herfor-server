@@ -24,7 +24,7 @@ public class Report {
     @Expose
     @ManyToOne
     @JsonIgnore
-    public User user;
+    private User user;
 
     @Embedded
     @Expose

@@ -24,12 +24,12 @@ public class ReportGrade {
 
     @JsonIgnore
     @ManyToOne
-    public Report marker;
+    private Report marker;
 
     @ManyToOne
-    public User user;
+    private User user;
 
-    public OffsetDateTime submissionDate = OffsetDateTime.now();
+    private OffsetDateTime submissionDate = OffsetDateTime.now();
 
     private Grade grade;
 

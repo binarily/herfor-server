@@ -11,6 +11,6 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReportSearchRequest {
-    public Point northEast, southWest;
-    public OffsetDateTime date;
+    private Point northEast, southWest;
+    private OffsetDateTime date;
 }

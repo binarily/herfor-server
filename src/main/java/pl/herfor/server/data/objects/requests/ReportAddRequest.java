@@ -14,7 +14,7 @@ public class ReportAddRequest {
     private Point location;
     private ReportProperties properties;
 
-    public Report toMarker(User user) {
+    public Report toReport(User user) {
         return new Report(location, properties, user);
     }
 }

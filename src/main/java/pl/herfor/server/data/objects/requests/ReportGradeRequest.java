@@ -10,10 +10,10 @@ import pl.herfor.server.data.objects.enums.Grade;
 @Data
 @AllArgsConstructor
 public class ReportGradeRequest {
-    public String userId;
-    public String reportId;
-    public Point location;
-    public Grade grade;
+    private String userId;
+    private String reportId;
+    private Point location;
+    private Grade grade;
 
     public ReportGrade toReportGrade(Report report) {
         return new ReportGrade(report, grade);
