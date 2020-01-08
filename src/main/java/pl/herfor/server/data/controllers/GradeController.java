@@ -78,7 +78,7 @@ public class GradeController {
                 (((double) System.currentTimeMillis() / 1000) - report.getProperties().getCreationDate().toEpochSecond()))
                 / Constants.REGULAR_EXPIRY_DURATION;
         User submittingUser = userRepository.getOne(gradeRequest.getUserId());
-        double userCoefficient = submittingUser.calculateReliability();
+        double userCoefficient = 1 + submittingUser.calculateReliability() / Constants.REGULAR_EXPIRY_DURATION;
         return (int) (gradeCoefficient * (1 + Math.tanh(Math.tanh(distanceCoefficient) + Math.tanh(timeCoefficient)
                 + Math.tanh(userCoefficient))) * Constants.GRADE_IMPACT_DURATION);
     }

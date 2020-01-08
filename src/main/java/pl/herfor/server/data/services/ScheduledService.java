@@ -26,10 +26,10 @@ public class ScheduledService {
     @Scheduled(fixedRate = 10 * 1000)
     public void invalidateExpiredMarkers() {
         if (Constants.DEV_SWITCH) {
-            log.debug("Marker expiry procedure ignored (dev switch).");
+            log.info("Marker expiry procedure ignored (dev switch).");
             return;
         }
-        log.debug("Marker expiry procedure triggered.");
+        log.info("Marker expiry procedure triggered.");
         List<Report> markersToRemove = reportRepository.findExpiredMarkers(OffsetDateTime.now());
         if (!markersToRemove.isEmpty()) {
             reportRepository.changeMarkerSeverity(markersToRemove.stream()
@@ -40,20 +40,19 @@ public class ScheduledService {
         markersToRemove.forEach(notificationService::notifyAboutRemovedReport);
         markersToRemove.forEach(report -> {
             long totalDuration = Duration.between(report.getProperties().getCreationDate(),
-                    report.getProperties().getExpiryDate()).toNanos() / 1000;
-            userRepository.updateReliabilityMetric(report.getUser().getId(), totalDuration);
-            reportRepository.changeReportExpiryDate(report.getId(), -1);
+                    report.getProperties().getExpiryDate()).toNanos() / 1000000;
+            userRepository.updateReliabilityMetric(report.getUser().getId(), totalDuration - Constants.REGULAR_EXPIRY_DURATION);
         });
-        log.debug("Expired {} markers.", markersToRemove.size());
+        log.info("Expired {} markers.", markersToRemove.size());
     }
 
     @Scheduled(fixedRate = 10 * 1000)
     public void switchGreenMarkerSeverities() {
         if (Constants.DEV_SWITCH) {
-            log.debug("Marker greening procedure ignored (dev switch).");
+            log.info("Marker greening procedure ignored (dev switch).");
             return;
         }
-        log.debug("Marker greening procedure triggered.");
+        log.info("Marker greening procedure triggered.");
         List<Report> markersToGreen = reportRepository.findChangeableMarkers(Severity.GREEN,
                 OffsetDateTime.now(), OffsetDateTime.now().plusMinutes(20));
         markersToGreen.forEach(notificationService::notifyAboutUpdatedReport);
@@ -62,16 +61,16 @@ public class ScheduledService {
                     .map(Report::getId)
                     .collect(Collectors.toList()), Severity.GREEN);
         }
-        log.debug("Changed {} markers.", markersToGreen.size());
+        log.info("Changed {} markers.", markersToGreen.size());
     }
 
     @Scheduled(fixedRate = 10 * 1000)
     public void switchYellowMarkerSeverities() {
         if (Constants.DEV_SWITCH) {
-            log.debug("Marker yellowing procedure ignored (dev switch).");
+            log.info("Marker yellowing procedure ignored (dev switch).");
             return;
         }
-        log.debug("Marker yellowing procedure triggered.");
+        log.info("Marker yellowing procedure triggered.");
         List<Report> markersToYellow = reportRepository.findChangeableMarkers(Severity.YELLOW,
                 OffsetDateTime.now().plusMinutes(20), OffsetDateTime.now().plusMinutes(35));
         markersToYellow.forEach(notificationService::notifyAboutUpdatedReport);
@@ -80,16 +79,16 @@ public class ScheduledService {
                     .map(Report::getId)
                     .collect(Collectors.toList()), Severity.YELLOW);
         }
-        log.debug("Changed {} markers.", markersToYellow.size());
+        log.info("Changed {} markers.", markersToYellow.size());
     }
 
     @Scheduled(fixedRate = 10 * 1000)
     public void switchRedMarkerSeverities() {
         if (Constants.DEV_SWITCH) {
-            log.debug("Marker redding procedure ignored (dev switch).");
+            log.info("Marker redding procedure ignored (dev switch).");
             return;
         }
-        log.debug("Marker redding procedure triggered.");
+        log.info("Marker redding procedure triggered.");
         List<Report> markersToRed = reportRepository.findChangeableMarkers(Severity.RED,
                 OffsetDateTime.now().plusMinutes(35), OffsetDateTime.now().plusHours(48));
         markersToRed.forEach(notificationService::notifyAboutUpdatedReport);
@@ -98,6 +97,6 @@ public class ScheduledService {
                     .map(Report::getId)
                     .collect(Collectors.toList()), Severity.RED);
         }
-        log.debug("Changed {} markers.", markersToRed.size());
+        log.info("Changed {} markers.", markersToRed.size());
     }
 }

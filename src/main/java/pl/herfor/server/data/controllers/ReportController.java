@@ -58,7 +58,7 @@ public class ReportController {
         if (!userRepository.existsById(request.getUserId())) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
-        if (DEV_SWITCH) {
+        if (!DEV_SWITCH) {
             if (!repository.findBetween(request.getLocation(), request.getLocation()).isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.CONFLICT);
             }
@@ -68,9 +68,9 @@ public class ReportController {
         User creatingUser = userRepository.getOne(request.getUserId());
         Report toSave = request.toReport(userRepository.getOne(request.getUserId()));
         toSave.getProperties()
-                .setModificationDate(toSave.getProperties()
+                .setExpiryDate(toSave.getProperties()
                         .getCreationDate()
-                        .plusSeconds((long) (Constants.REGULAR_EXPIRY_DURATION * creatingUser.calculateReliability()))
+                        .plusSeconds((long) (Constants.REGULAR_EXPIRY_DURATION + creatingUser.calculateReliability()))
                 );
         Report saved = repository.save(toSave);
         try {

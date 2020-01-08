@@ -26,7 +26,7 @@ public class ReportProperties {
     @Expose
     private OffsetDateTime modificationDate = OffsetDateTime.now();
     @JsonIgnore
-    private OffsetDateTime expiryDate = OffsetDateTime.now().plusMinutes(Constants.REGULAR_EXPIRY_DURATION);
+    private OffsetDateTime expiryDate = OffsetDateTime.now().plusSeconds(Constants.REGULAR_EXPIRY_DURATION);
     @Enumerated(EnumType.STRING)
     @Expose
     private Accident accident;
