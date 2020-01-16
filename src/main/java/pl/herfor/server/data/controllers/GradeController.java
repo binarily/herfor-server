@@ -17,7 +17,6 @@ import pl.herfor.server.data.repositories.GradeRepository;
 import pl.herfor.server.data.repositories.ReportRepository;
 import pl.herfor.server.data.repositories.UserRepository;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 
 @RestController
@@ -47,24 +46,10 @@ public class GradeController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         ReportGrade addedGrade = repository.save(gradeRequest.toReportGrade(report));
-        modifyReportWithGrade(gradeRequest, report);
 
         int timeDiff = calculateTimeDifference(gradeRequest, report);
         reportRepository.changeReportExpiryDate(report.getId(), timeDiff);
-        reportRepository.save(report);
         return new ResponseEntity<>(addedGrade, HttpStatus.OK);
-    }
-
-    private void modifyReportWithGrade(ReportGradeRequest gradeRequest, Report report) {
-        OffsetDateTime dateToModify = report.getProperties().getExpiryDate();
-        if (gradeRequest.getGrade() == Grade.RELEVANT) {
-            dateToModify = dateToModify.plusSeconds(30);
-        } else if (gradeRequest.getGrade() == Grade.NOT_RELEVANT) {
-            dateToModify = dateToModify.minusSeconds(30);
-        }
-        //TODO: do with an atomic call to database
-        report.getProperties().setExpiryDate(dateToModify);
-        report.getProperties().setModificationDate(OffsetDateTime.now());
     }
 
     private int calculateTimeDifference(ReportGradeRequest gradeRequest, Report report) {
