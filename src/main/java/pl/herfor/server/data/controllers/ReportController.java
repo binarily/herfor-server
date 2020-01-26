@@ -53,7 +53,7 @@ public class ReportController {
         return repository.findReportByIdIn(markerIds);
     }
 
-    @PostMapping(path = "/reports/create", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(path = "/reports/add", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Report> create(@RequestBody ReportAddRequest request) {
         if (!userRepository.existsById(request.getUserId())) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
@@ -70,7 +70,7 @@ public class ReportController {
         toSave.getProperties()
                 .setExpiryDate(toSave.getProperties()
                         .getCreationDate()
-                        .plusSeconds((long) (Constants.REGULAR_EXPIRY_DURATION + creatingUser.calculateReliability()))
+                        .plusSeconds((long) (Constants.REGULAR_EXPIRY_DURATION * creatingUser.calculateReliability()))
                 );
         Report saved = repository.save(toSave);
         try {
