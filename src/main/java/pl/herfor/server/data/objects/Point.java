@@ -1,5 +1,6 @@
 package pl.herfor.server.data.objects;
 
+import com.google.gson.annotations.Expose;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,5 +12,8 @@ import javax.persistence.Embeddable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Point {
-    public double latitude, longitude;
+    @Expose
+    private double latitude;
+    @Expose
+    private double longitude;
 }
